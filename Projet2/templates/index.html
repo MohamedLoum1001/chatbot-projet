@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot éducatif</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            padding: 20px;
+        }
+        .subject-button {
+            padding: 10px;
+            margin: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Chatbot éducatif</h1>
+    <p>Choisissez un domaine pour obtenir des informations.</p>
+</header>
+
+<div class="container">
+    <div id="subjects-list">
+        {% for subject in subjects %}
+            <button class="subject-button" onclick="askQuestion('{{ subject[0] }}')">{{ subject[0] }}</button>
+        {% endfor %}
+    </div>
+
+    <div id="response" class="response" style="display:none;"></div>
+</div>
+
+<script>
+    function askQuestion(subject) {
+        fetch('/ask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ subject: subject })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const responseDiv = document.getElementById('response');
+            if (data.status === "success") {
+                responseDiv.innerHTML = `<h3>${data.data.name}</h3><p>${data.data.description}</p><p><strong>Exemple :</strong> ${data.data.example}</p>`;
+                responseDiv.style.display = 'block';
+            } else {
+                responseDiv.innerHTML = `<p>${data.message}</p>`;
+                responseDiv.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+
+</body>
+</html>
