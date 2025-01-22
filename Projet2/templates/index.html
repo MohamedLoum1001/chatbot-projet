@@ -6,42 +6,94 @@
     <title>Chatbot éducatif</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #f8f9fa;
+            color: #333;
         }
+
         header {
             background-color: #4CAF50;
             color: white;
             text-align: center;
-            padding: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 1.2rem;
+        }
+
         .container {
             padding: 20px;
-            max-width: 800px;
-            margin: auto;
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
         .subject-button {
-            padding: 10px;
+            padding: 12px 20px;
             margin: 10px;
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
             display: inline-block;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        .subject-button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading {
+            font-size: 1.2rem;
+            color: #888;
+            text-align: center;
+            margin-top: 20px;
+        }
+
         .response {
             margin-top: 20px;
-            padding: 10px;
-            background-color: #fff;
+            padding: 15px;
+            background-color: #f9f9f9;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: none;
+            font-size: 1.1rem;
+            line-height: 1.6;
         }
-        .typing {
-            color: #888;
-            font-style: italic;
+
+        .response button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .response button:hover {
+            background-color: #1e88e5;
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -59,7 +111,12 @@
         {% endfor %}
     </div>
 
-    <div id="response" class="response"></div>
+    <div id="response" class="response">
+        <button id="back-button" style="display: none;" onclick="goBack()">Retour</button>
+        <div id="response-content"></div>
+    </div>
+
+    <div id="loading" class="loading" style="display: none;">Chargement...</div>
 </div>
 
 <script>
@@ -81,6 +138,17 @@
     }
 
     function askQuestion(subject) {
+        const loadingDiv = document.getElementById('loading');
+        const responseDiv = document.getElementById('response');
+        const responseContent = document.getElementById('response-content');
+        const backButton = document.getElementById('back-button');
+
+        // Show loading indicator and disable buttons
+        loadingDiv.style.display = 'block';
+        responseDiv.style.display = 'none'; // Hide previous response
+        backButton.style.display = 'none'; // Hide back button
+        disableButtons(true); // Disable buttons
+
         fetch('/ask', {
             method: 'POST',
             headers: {
@@ -90,23 +158,90 @@
         })
         .then(response => response.json())
         .then(data => {
-            const responseDiv = document.getElementById('response');
+            // Hide loading indicator
+            loadingDiv.style.display = 'none';
+            enableButtons(); // Enable buttons again
+
             responseDiv.style.display = 'block'; // Show response div
-            
+
+            // Clear previous content before adding new response
+            responseContent.innerHTML = "";
+
             if (data.status === "success") {
-                const responseText = `${data.data.name}\n\n${data.data.description}\n\nExemple : ${data.data.example}\n\nSous-questions :\n${data.data.related}`;
-                typeEffect(responseDiv, responseText);
+                const responseText = `${data.data.name}\n\n${data.data.description}\n\nExemple : ${data.data.example}\n\nSous-questions :`;
+                typeEffect(responseContent, responseText, () => {
+                    // Create buttons for related questions
+                    const relatedQuestions = data.data.related.split('\n').map(q => q.replace('- ', '').trim());
+                    relatedQuestions.forEach(question => {
+                        const button = document.createElement('button');
+                        button.className = 'subject-button'; // Use the same class for styling
+                        button.textContent = question;
+                        button.onclick = () => askRelatedQuestion(question);
+                        responseContent.appendChild(button);
+                    });
+                });
             } else {
                 const errorText = data.message;
-                typeEffect(responseDiv, errorText);
+                typeEffect(responseContent, errorText);
+            }
+        })
+        .catch(error => {
+            // Hide loading indicator and enable buttons
+            loadingDiv.style.display = 'none';
+            enableButtons();
+            console.error('Error:', error);
+        });
+    }
+
+    function goBack() {
+        const responseDiv = document.getElementById('response');
+        const responseContent = document.getElementById('response-content');
+        const backButton = document.getElementById('back-button');
+        responseContent.innerHTML = ""; // Clear the content
+        responseDiv.style.display = 'none'; // Hide response div
+        backButton.style.display = 'none'; // Hide back button
+    }
+
+    function askRelatedQuestion(question) {
+        const responseContent = document.getElementById('response-content');
+
+        fetch('/related_question', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question: question })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                const relatedResponseText = `\n\n${data.data.question}\nRéponse : ${data.data.answer}`;
+                // Append the related response to the current content
+                typeEffect(responseContent, relatedResponseText, () => {
+                    responseContent.innerHTML += relatedResponseText; // Ensure the response is appended
+                });
+            } else {
+                const errorText = data.message;
+                typeEffect(responseContent, errorText);
             }
         })
         .catch(error => {
             console.error('Error:', error);
         });
     }
+
+    function disableButtons(disable) {
+        const buttons = document.querySelectorAll('.subject-button');
+        buttons.forEach(button => {
+            button.disabled = disable;
+            button.style.opacity = disable ? 0.5 : 1; // Change opacity when disabled
+        });
+    }
+
+    function enableButtons() {
+        disableButtons(false); // Re-enable all buttons
+    }
 </script>
 
 </body>
 </html>
-
