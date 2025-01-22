@@ -9,6 +9,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #f4f4f4;
         }
         header {
             background-color: #4CAF50;
@@ -18,6 +19,8 @@
         }
         .container {
             padding: 20px;
+            max-width: 800px;
+            margin: auto;
         }
         .subject-button {
             padding: 10px;
@@ -30,8 +33,15 @@
         .response {
             margin-top: 20px;
             padding: 10px;
-            background-color: #f9f9f9;
+            background-color: #fff;
             border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .typing {
+            color: #888;
+            font-style: italic;
         }
     </style>
 </head>
@@ -45,14 +55,31 @@
 <div class="container">
     <div id="subjects-list">
         {% for subject in subjects %}
-            <button class="subject-button" onclick="askQuestion('{{ subject[0] }}')">{{ subject[0] }}</button>
+            <button class="subject-button" onclick="askQuestion('{{ subject }}')">{{ subject }}</button>
         {% endfor %}
     </div>
 
-    <div id="response" class="response" style="display:none;"></div>
+    <div id="response" class="response"></div>
 </div>
 
 <script>
+    function typeEffect(element, text, callback) {
+        element.innerHTML = ""; // Clear previous content
+        let index = 0;
+
+        function type() {
+            if (index < text.length) {
+                element.innerHTML += text.charAt(index);
+                index++;
+                setTimeout(type, 50); // Adjust typing speed here
+            } else if (callback) {
+                callback();
+            }
+        }
+
+        type();
+    }
+
     function askQuestion(subject) {
         fetch('/ask', {
             method: 'POST',
@@ -64,12 +91,14 @@
         .then(response => response.json())
         .then(data => {
             const responseDiv = document.getElementById('response');
+            responseDiv.style.display = 'block'; // Show response div
+            
             if (data.status === "success") {
-                responseDiv.innerHTML = `<h3>${data.data.name}</h3><p>${data.data.description}</p><p><strong>Exemple :</strong> ${data.data.example}</p>`;
-                responseDiv.style.display = 'block';
+                const responseText = `${data.data.name}\n\n${data.data.description}\n\nExemple : ${data.data.example}\n\nSous-questions :\n${data.data.related}`;
+                typeEffect(responseDiv, responseText);
             } else {
-                responseDiv.innerHTML = `<p>${data.message}</p>`;
-                responseDiv.style.display = 'block';
+                const errorText = data.message;
+                typeEffect(responseDiv, errorText);
             }
         })
         .catch(error => {
@@ -80,3 +109,4 @@
 
 </body>
 </html>
+
