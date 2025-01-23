@@ -3,245 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot éducatif</title>
+    <title>Chatbot FAQ</title>
     <style>
         body {
-            font-family: 'Roboto', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Police plus moderne */
+            margin: 20px;
+            background-color: #f4f6f9; /* Couleur d'arrière-plan douce */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
         }
 
-        header {
-            background-color: #4CAF50;
-            color: white;
-            text-align: center;
-            padding: 30px 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .chat-container {
+            max-width: 600px;
+            border: 1px solid #ccc;
+            border-radius: 15px; /* Coins arrondis */
+            overflow: hidden;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2); /* Ombre plus marquée */
+            background-color: #ffffff; /* Couleur de fond de la boîte */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 2.5rem;
+        .chat-box {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px; /* Espacement interne */
+            background: #f9f9f9; /* Couleur de fond de la zone de chat */
+            border-bottom: 1px solid #ccc; /* Ligne de séparation */
+            width: 100%; /* Prend toute la largeur de la boîte */
         }
 
-        header p {
-            margin: 5px 0 0;
-            font-size: 1.2rem;
+        .user-message,
+        .bot-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px; /* Coins arrondis pour les messages */
+            max-width: 80%; /* Limite de largeur pour les messages */
+            word-wrap: break-word; /* Permet le retour à la ligne dans les messages */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Ombre des messages */
+            transition: all 0.3s; /* Transition douce pour l'animation */
         }
 
-        .container {
-            padding: 20px;
-            max-width: 900px;
-            margin: 30px auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .user-message {
+            background: #e0f7fa; /* Couleur de fond pour le message de l'utilisateur */
+            align-self: flex-end;
+            margin-left: auto; /* Aligne à droite */
         }
 
-        .subject-button {
-            padding: 12px 20px;
-            margin: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        .bot-message {
+            background: #ffe0b2; /* Couleur de fond pour le message du bot */
+            align-self: flex-start;
+            margin-right: auto; /* Aligne à gauche */
+        }
+
+        .question {
             cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
-            display: inline-block;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .subject-button:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .loading {
-            font-size: 1.2rem;
-            color: #888;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .response {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: none;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-
-        .response button {
-            margin-top: 10px;
-            padding: 10px 15px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
+            margin: 5px 0;
+            padding: 10px;
+            background: #e1f5fe; /* Couleur de fond pour les questions */
             border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background-color 0.3s, transform 0.2s;
+            transition: background 0.3s; /* Transition douce pour le survol */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Ombre des questions */
         }
 
-        .response button:hover {
-            background-color: #1e88e5;
-            transform: scale(1.05);
+        .question:hover {
+            background: #b3e5fc; /* Couleur de fond au survol */
+        }
+
+        button {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: none; /* Supprime les bordures par défaut */
+            border-radius: 5px; /* Coins arrondis pour le bouton */
+            background-color: #2196F3; /* Couleur de fond pour le bouton */
+            color: white; /* Couleur du texte */
+            cursor: pointer; /* Curseur en main */
+            transition: background 0.3s, transform 0.2s; /* Transition douce pour le survol */
+        }
+
+        button:hover {
+            background-color: #1976D2; /* Couleur de fond au survol */
+            transform: scale(1.05); /* Légère augmentation de la taille */
+        }
+
+        h1 {
+            text-align: center; /* Centre le titre */
+            color: #333; /* Couleur du titre */
         }
     </style>
 </head>
+
 <body>
-
-<header>
-    <h1>Chatbot éducatif</h1>
-    <p>Choisissez un domaine pour obtenir des informations.</p>
-</header>
-
-<div class="container">
-    <div id="subjects-list">
-        {% for subject in subjects %}
-            <button class="subject-button" onclick="askQuestion('{{ subject }}')">{{ subject }}</button>
-        {% endfor %}
+    <h1>Chatbot  Education</h1>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <button id="restart-button">Cliquer sur le bouton pour recommencer la discussion</button>
     </div>
 
-    <div id="response" class="response">
-        <button id="back-button" style="display: none;" onclick="goBack()">Retour</button>
-        <div id="response-content"></div>
-    </div>
+    <script>
+        const chatBox = document.getElementById('chat-box');
 
-    <div id="loading" class="loading" style="display: none;">Chargement...</div>
-</div>
-
-<script>
-    function typeEffect(element, text, callback) {
-        element.innerHTML = ""; // Clear previous content
-        let index = 0;
-
-        function type() {
+        // Fonction pour simuler l'effet d'écriture
+        function typeWriter(element, text, index, callback) {
             if (index < text.length) {
-                element.innerHTML += text.charAt(index);
+                element.textContent += text.charAt(index);
                 index++;
-                setTimeout(type, 50); // Adjust typing speed here
-            } else if (callback) {
+                setTimeout(() => typeWriter(element, text, index, callback), 50);
+            } else {
                 callback();
             }
         }
 
-        type();
-    }
+        // Fonction pour afficher la réponse dans le chat
+        function displayChatMessage(message, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isUser ? 'user-message' : 'bot-message';
+            chatBox.appendChild(messageDiv);
+            typeWriter(messageDiv, message, 0, () => {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
 
-    function askQuestion(subject) {
-        const loadingDiv = document.getElementById('loading');
-        const responseDiv = document.getElementById('response');
-        const responseContent = document.getElementById('response-content');
-        const backButton = document.getElementById('back-button');
+        // Fonction pour afficher les questions dans le chat
+        function displayQuestions(data) {
+            data.forEach(item => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.textContent = item.question;
 
-        // Show loading indicator and disable buttons
-        loadingDiv.style.display = 'block';
-        responseDiv.style.display = 'none'; // Hide previous response
-        backButton.style.display = 'none'; // Hide back button
-        disableButtons(true); // Disable buttons
+                questionDiv.addEventListener('click', () => {
+                    displayChatMessage(item.answer, false);
 
-        fetch('/ask', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ subject: subject })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Hide loading indicator
-            loadingDiv.style.display = 'none';
-            enableButtons(); // Enable buttons again
+                    // Afficher les questions de suivi
+                    if (item.follow_up.length > 0) {
+                        item.follow_up.forEach(followUp => {
+                            const followUpDiv = document.createElement('div');
+                            followUpDiv.className = 'question';
+                            followUpDiv.textContent = followUp.question;
 
-            responseDiv.style.display = 'block'; // Show response div
+                            followUpDiv.addEventListener('click', () => {
+                                displayChatMessage(followUp.answer, false);
+                            });
 
-            // Clear previous content before adding new response
-            responseContent.innerHTML = "";
-
-            if (data.status === "success") {
-                const responseText = `${data.data.name}\n\n${data.data.description}\n\nExemple : ${data.data.example}\n\nSous-questions :`;
-                typeEffect(responseContent, responseText, () => {
-                    // Create buttons for related questions
-                    const relatedQuestions = data.data.related.split('\n').map(q => q.replace('- ', '').trim());
-                    relatedQuestions.forEach(question => {
-                        const button = document.createElement('button');
-                        button.className = 'subject-button'; // Use the same class for styling
-                        button.textContent = question;
-                        button.onclick = () => askRelatedQuestion(question);
-                        responseContent.appendChild(button);
-                    });
+                            chatBox.appendChild(followUpDiv);
+                        });
+                    }
+                    
+                    chatBox.scrollTop = chatBox.scrollHeight;
                 });
-            } else {
-                const errorText = data.message;
-                typeEffect(responseContent, errorText);
-            }
-        })
-        .catch(error => {
-            // Hide loading indicator and enable buttons
-            loadingDiv.style.display = 'none';
-            enableButtons();
-            console.error('Error:', error);
+
+                chatBox.appendChild(questionDiv);
+            });
+        }
+
+        // Charger les questions via l'API
+        fetch('/faq')
+            .then(response => response.json())
+            .then(data => displayQuestions(data));
+
+        // Réinitialiser la discussion
+        document.getElementById('restart-button').addEventListener('click', () => {
+            chatBox.innerHTML = ''; // Effacer les messages du chat
+            fetch('/faq')
+                .then(response => response.json())
+                .then(data => displayQuestions(data));
         });
-    }
-
-    function goBack() {
-        const responseDiv = document.getElementById('response');
-        const responseContent = document.getElementById('response-content');
-        const backButton = document.getElementById('back-button');
-        responseContent.innerHTML = ""; // Clear the content
-        responseDiv.style.display = 'none'; // Hide response div
-        backButton.style.display = 'none'; // Hide back button
-    }
-
-    function askRelatedQuestion(question) {
-        const responseContent = document.getElementById('response-content');
-
-        fetch('/related_question', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ question: question })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
-                const relatedResponseText = `\n\n${data.data.question}\nRéponse : ${data.data.answer}`;
-                // Append the related response to the current content
-                typeEffect(responseContent, relatedResponseText, () => {
-                    responseContent.innerHTML += relatedResponseText; // Ensure the response is appended
-                });
-            } else {
-                const errorText = data.message;
-                typeEffect(responseContent, errorText);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    }
-
-    function disableButtons(disable) {
-        const buttons = document.querySelectorAll('.subject-button');
-        buttons.forEach(button => {
-            button.disabled = disable;
-            button.style.opacity = disable ? 0.5 : 1; // Change opacity when disabled
-        });
-    }
-
-    function enableButtons() {
-        disableButtons(false); // Re-enable all buttons
-    }
-</script>
-
+    </script>
 </body>
 </html>
